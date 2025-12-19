@@ -5,8 +5,8 @@ import vueDevTools from 'vite-plugin-vue-devtools'
 
 // https://vite.dev/config/
 export default defineConfig(
-  ({ mode }: { mode: string }): UserConfig => ({
-    base: mode === 'production' ? '/admin/' : '/',
+  (): UserConfig => ({
+    base: '/', // 根路径
     plugins: [vue(), vueDevTools()],
     resolve: {
       alias: {
