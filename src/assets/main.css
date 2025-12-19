@@ -1,0 +1,21 @@
+@import './base.css';
+
+html,
+body,
+#app {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  background: #f5f7fa;
+}
+
+#app {
+  width: 100%;
+}
+
+a {
+  text-decoration: none;
+  color: inherit;
+}
