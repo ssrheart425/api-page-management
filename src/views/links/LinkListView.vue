@@ -35,6 +35,11 @@ function normalizeQueryType(value: unknown): QueryType | undefined {
   return undefined
 }
 
+function queryTypeParam(value: unknown): number | 'none' {
+  const normalized = normalizeQueryType(value) ?? 0
+  return normalized === 0 ? 'none' : normalized
+}
+
 const tableLoading = ref(false)
 const rows = ref<LinkItem[]>([])
 const total = ref(0)
@@ -55,7 +60,7 @@ async function fetchList() {
   tableLoading.value = true
   try {
     const res = await apiFetchLinks({
-      type: normalizeQueryType(query.type) ?? 0,
+      type: queryTypeParam(query.type),
       link: query.link.trim() || undefined,
       page: page.current,
       size: page.size,
