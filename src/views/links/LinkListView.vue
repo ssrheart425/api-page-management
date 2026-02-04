@@ -16,7 +16,10 @@ const TYPE_OPTIONS = [
   { label: 'Telegram', value: 2 },
 ] as const
 
+const QUERY_TYPE_OPTIONS = [{ label: '全部', value: 0 }, ...TYPE_OPTIONS] as const
+
 type LinkType = (typeof TYPE_OPTIONS)[number]['value']
+type QueryType = (typeof QUERY_TYPE_OPTIONS)[number]['value']
 
 function normalizeType(value: unknown): LinkType | undefined {
   if (value === undefined || value === null || value === '') return undefined
@@ -25,12 +28,19 @@ function normalizeType(value: unknown): LinkType | undefined {
   return undefined
 }
 
+function normalizeQueryType(value: unknown): QueryType | undefined {
+  if (value === undefined || value === null || value === '') return undefined
+  const num = Number(value)
+  if (num === 0 || num === 1 || num === 2) return num
+  return undefined
+}
+
 const tableLoading = ref(false)
 const rows = ref<LinkItem[]>([])
 const total = ref(0)
 
 const query = reactive({
-  type: 1 as LinkType,
+  type: 0 as QueryType,
   link: '',
 })
 
@@ -45,7 +55,7 @@ async function fetchList() {
   tableLoading.value = true
   try {
     const res = await apiFetchLinks({
-      type: normalizeType(query.type) ?? 1,
+      type: normalizeQueryType(query.type) ?? 0,
       link: query.link.trim() || undefined,
       page: page.current,
       size: page.size,
@@ -65,7 +75,7 @@ function onSearch() {
 }
 
 function onReset() {
-  query.type = 1
+  query.type = 0
   query.link = ''
   page.current = 1
   fetchList()
@@ -173,14 +183,16 @@ async function onDelete(rows?: LinkItem[]) {
   }
 
   try {
-    const fallbackType = normalizeType(query.type) ?? 1
+    const fallbackType = normalizeType(query.type)
     const invalid = targets.find((i) => !normalizeType(i.type) && !fallbackType)
     if (invalid) {
       ElMessage.error(`ID ${invalid.id} 缺少类型`)
       return
     }
     await Promise.all(
-      targets.map((i) => apiDeleteLink(i.id, (normalizeType(i.type) ?? fallbackType) as LinkType)),
+      targets.map((i) =>
+        apiDeleteLink(i.id, (normalizeType(i.type) ?? fallbackType) as LinkType),
+      ),
     )
     selectedRows.value = []
     ElMessage.success('删除成功')
@@ -212,7 +224,12 @@ function typeLabel(type: number) {
       <el-form :inline="true" :model="query" class="search-form">
         <el-form-item label="类型">
           <el-select v-model="query.type" placeholder="请选择类型" style="width: 160px">
-            <el-option v-for="opt in TYPE_OPTIONS" :key="opt.value" :label="opt.label" :value="opt.value" />
+            <el-option
+              v-for="opt in QUERY_TYPE_OPTIONS"
+              :key="opt.value"
+              :label="opt.label"
+              :value="opt.value"
+            />
           </el-select>
         </el-form-item>
 
