@@ -11,7 +11,7 @@ export interface LinkItem {
 }
 
 export interface LinkListQuery {
-  type: number | 'none'
+  type?: number
   link?: string
   deleted?: boolean
   page?: number

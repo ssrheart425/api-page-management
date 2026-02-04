@@ -35,9 +35,9 @@ function normalizeQueryType(value: unknown): QueryType | undefined {
   return undefined
 }
 
-function queryTypeParam(value: unknown): number | 'none' {
+function queryTypeParam(value: unknown): number | undefined {
   const normalized = normalizeQueryType(value) ?? 0
-  return normalized === 0 ? 'none' : normalized
+  return normalized === 0 ? undefined : normalized
 }
 
 const tableLoading = ref(false)
