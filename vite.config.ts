@@ -6,7 +6,7 @@ import vueDevTools from 'vite-plugin-vue-devtools'
 // https://vite.dev/config/
 export default defineConfig(
   (): UserConfig => ({
-    base: '/', // 根路径
+    base: '/admin/', // 根路径
     plugins: [vue(), vueDevTools()],
     resolve: {
       alias: {
