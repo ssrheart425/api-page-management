@@ -11,7 +11,7 @@ export interface LinkItem {
 }
 
 export interface LinkListQuery {
-  type?: number
+  type: number
   link?: string
   deleted?: boolean
   page?: number
@@ -67,7 +67,7 @@ export async function apiUpdateLink(id: number, payload: UpdateLinkRequest): Pro
   unwrapApi(data)
 }
 
-export async function apiDeleteLink(id: number): Promise<void> {
-  const { data } = await http.delete(API.links.remove(id))
+export async function apiDeleteLink(id: number, type: number): Promise<void> {
+  const { data } = await http.delete(API.links.remove(id), { params: { type } })
   unwrapApi(data)
 }

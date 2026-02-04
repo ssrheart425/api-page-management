@@ -16,12 +16,21 @@ const TYPE_OPTIONS = [
   { label: 'Telegram', value: 2 },
 ] as const
 
+type LinkType = (typeof TYPE_OPTIONS)[number]['value']
+
+function normalizeType(value: unknown): LinkType | undefined {
+  if (value === undefined || value === null || value === '') return undefined
+  const num = Number(value)
+  if (num === 1 || num === 2) return num
+  return undefined
+}
+
 const tableLoading = ref(false)
 const rows = ref<LinkItem[]>([])
 const total = ref(0)
 
 const query = reactive({
-  type: undefined as number | undefined,
+  type: 1 as LinkType,
   link: '',
 })
 
@@ -36,7 +45,7 @@ async function fetchList() {
   tableLoading.value = true
   try {
     const res = await apiFetchLinks({
-      type: query.type,
+      type: normalizeType(query.type) ?? 1,
       link: query.link.trim() || undefined,
       page: page.current,
       size: page.size,
@@ -56,7 +65,7 @@ function onSearch() {
 }
 
 function onReset() {
-  query.type = undefined
+  query.type = 1
   query.link = ''
   page.current = 1
   fetchList()
@@ -82,7 +91,7 @@ const dialog = reactive({
   mode: 'create' as 'create' | 'edit',
   form: {
     id: 0,
-    type: 1,
+    type: 1 as LinkType,
     link: '',
   },
 })
@@ -97,7 +106,7 @@ function openCreate() {
   dialog.mode = 'create'
   dialog.form = {
     id: 0,
-    type: 1,
+    type: 1 as LinkType,
     link: '',
   }
   dialog.visible = true
@@ -109,7 +118,7 @@ function openEdit(row?: LinkItem) {
   dialog.mode = 'edit'
   dialog.form = {
     id: target.id,
-    type: target.type,
+    type: normalizeType(target.type) ?? 1,
     link: target.link,
   }
   dialog.visible = true
@@ -121,16 +130,22 @@ async function onDialogSubmit() {
   if (!valid) return
 
   try {
+    const type = normalizeType(dialog.form.type)
+    if (!type) {
+      ElMessage.error('请选择类型')
+      return
+    }
+
     if (dialog.mode === 'create') {
       await apiCreateLink({
-        type: dialog.form.type,
+        type,
         link: dialog.form.link.trim(),
       })
       ElMessage.success('新增成功')
     } else {
       if (!dialog.form.id) throw new Error('缺少 id')
       await apiUpdateLink(dialog.form.id, {
-        type: dialog.form.type,
+        type,
         link: dialog.form.link.trim(),
       })
       ElMessage.success('保存成功')
@@ -158,7 +173,14 @@ async function onDelete(rows?: LinkItem[]) {
   }
 
   try {
-    await Promise.all(targets.map((i) => apiDeleteLink(i.id)))
+    const invalid = targets.find((i) => !normalizeType(i.type))
+    if (invalid) {
+      ElMessage.error(`ID ${invalid.id} 缺少类型`)
+      return
+    }
+    await Promise.all(
+      targets.map((i) => apiDeleteLink(i.id, normalizeType(i.type) as LinkType)),
+    )
     selectedRows.value = []
     ElMessage.success('删除成功')
     await fetchList()
@@ -188,7 +210,7 @@ function typeLabel(type: number) {
     <el-card shadow="never" class="card">
       <el-form :inline="true" :model="query" class="search-form">
         <el-form-item label="类型">
-          <el-select v-model="query.type" placeholder="全部" clearable style="width: 160px">
+          <el-select v-model="query.type" placeholder="请选择类型" style="width: 160px">
             <el-option v-for="opt in TYPE_OPTIONS" :key="opt.value" :label="opt.label" :value="opt.value" />
           </el-select>
         </el-form-item>
