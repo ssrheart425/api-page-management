@@ -173,13 +173,14 @@ async function onDelete(rows?: LinkItem[]) {
   }
 
   try {
-    const invalid = targets.find((i) => !normalizeType(i.type))
+    const fallbackType = normalizeType(query.type) ?? 1
+    const invalid = targets.find((i) => !normalizeType(i.type) && !fallbackType)
     if (invalid) {
       ElMessage.error(`ID ${invalid.id} 缺少类型`)
       return
     }
     await Promise.all(
-      targets.map((i) => apiDeleteLink(i.id, normalizeType(i.type) as LinkType)),
+      targets.map((i) => apiDeleteLink(i.id, (normalizeType(i.type) ?? fallbackType) as LinkType)),
     )
     selectedRows.value = []
     ElMessage.success('删除成功')
