@@ -14,6 +14,7 @@ import {
 const TYPE_OPTIONS = [
   { label: 'WhatsApp', value: 1 },
   { label: 'Telegram', value: 2 },
+  { label: 'LINE', value: 3 },
 ] as const
 
 const QUERY_TYPE_OPTIONS = [{ label: '全部', value: 0 }, ...TYPE_OPTIONS] as const
@@ -24,14 +25,14 @@ type QueryType = (typeof QUERY_TYPE_OPTIONS)[number]['value']
 function normalizeType(value: unknown): LinkType | undefined {
   if (value === undefined || value === null || value === '') return undefined
   const num = Number(value)
-  if (num === 1 || num === 2) return num
+  if (num === 1 || num === 2 || num === 3) return num
   return undefined
 }
 
 function normalizeQueryType(value: unknown): QueryType | undefined {
   if (value === undefined || value === null || value === '') return undefined
   const num = Number(value)
-  if (num === 0 || num === 1 || num === 2) return num
+  if (num === 0 || num === 1 || num === 2 || num === 3) return num
   return undefined
 }
 
@@ -219,6 +220,7 @@ function formatDate(value: string) {
 function typeLabel(type: number) {
   if (type === 1) return 'WhatsApp'
   if (type === 2) return 'Telegram'
+  if (type === 3) return 'LINE'
   return String(type)
 }
 </script>
@@ -273,7 +275,7 @@ function typeLabel(type: number) {
         <el-table-column prop="id" label="ID" width="80" />
         <el-table-column label="类型" width="120">
           <template #default="{ row }">
-            <el-tag :type="row.type === 1 ? 'success' : row.type === 2 ? 'warning' : 'info'">
+            <el-tag :type="row.type === 1 ? 'success' : row.type === 2 ? 'warning' : row.type === 3 ? 'primary' : 'info'">
               {{ typeLabel(row.type) }}
             </el-tag>
           </template>
